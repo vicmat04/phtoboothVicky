@@ -5,28 +5,43 @@
  *
  * Adaptado para el diseño vertical de "Los XI de Ana Victoria".
  * Ajusta 4 fotos en una grilla 2x2 dentro de marcos dorados.
- * Proporción de salida: 682x1024 (Vertical).
+ *
+ * La imagen del fondo es 4267x6400 — usamos esas dimensiones
+ * reales para que las coordenadas sean exactas y no haya
+ * distorsión o mala alineación al escalar.
  *
  * @module generateQuinceCollage
  */
 
 // ─────────────────────────────────────────────
-// Constantes del motor (Vertical: 682x1024)
+// Constantes del motor (Resolución real del asset)
 // ─────────────────────────────────────────────
 
-const CANVAS_W     = 682;
-const CANVAS_H     = 1024;
-const JPEG_QUALITY = 0.95;
+const CANVAS_W     = 4267;
+const CANVAS_H     = 6400;
+const JPEG_QUALITY = 0.92;
 const OUTPUT_MIME  = 'image/jpeg';
 
-// ─── Layout de Grilla 2x2 ──────────────────
-// Coordenadas calculadas para el diseño vertical Black & Gold
+// ─── Layout de Grilla 2x2 ──────────────────────
+//
+// Coordenadas calculadas SOBRE el asset de 4267x6400.
+//
+// Estructura visual del fondo:
+//   0      → ~1100: Título "Los XI de Ana Victoria"
+//   1100   → ~3510: Fila superior (2 marcos)
+//   3510   → ~3760: Separador dorado central
+//   3760   → ~6100: Fila inferior (2 marcos)
+//   6100   → 6400:  Footer "18 de abril de 2026"
+//
+// Márgenes laterales del diseño: ~260px c/u
+// Gap entre columnas: ~220px
+// Cada celda: ~1890 × ~2340 px
 
 const GRID_CELLS = [
-  { x: 53,  y: 246, width: 280, height: 298 }, // Fila 1 - Izq (Ajustado)
-  { x: 349, y: 246, width: 280, height: 298 }, // Fila 1 - Der (Ajustado)
-  { x: 53,  y: 562, width: 280, height: 298 }, // Fila 2 - Izq (Ajustado)
-  { x: 349, y: 562, width: 280, height: 298 }, // Fila 2 - Der (Ajustado)
+  { x: 260,  y: 1100, width: 1890, height: 2380 }, // Fila 1 - Izq
+  { x: 2370, y: 1100, width: 1890, height: 2380 }, // Fila 1 - Der
+  { x: 260,  y: 3750, width: 1890, height: 2380 }, // Fila 2 - Izq
+  { x: 2370, y: 3750, width: 1890, height: 2380 }, // Fila 2 - Der
 ];
 
 // ─────────────────────────────────────────────
@@ -81,39 +96,40 @@ export async function generateQuinceCollage(
   canvas.height = CANVAS_H;
   const ctx     = canvas.getContext('2d');
 
-  // Fondo base negro
+  // Fondo negro de fallback
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-  // Carga asíncrona
+  // Carga asíncrona en paralelo
   const [bgImg, ...photoImgs] = await Promise.all([
     loadImage(backgroundUrl),
     ...photosBase64.slice(0, 4).map(loadImage),
   ]);
 
-  // CAPA 1: Background Vertical (682x1024)
+  // CAPA 1: Background a resolución completa
   ctx.drawImage(bgImg, 0, 0, CANVAS_W, CANVAS_H);
 
-  // CAPA 2: Fotos en marcos dorados
+  // CAPA 2: Fotos dentro de los marcos dorados
   photoImgs.forEach((photo, i) => {
     const { x, y, width, height } = GRID_CELLS[i];
-    
+
     ctx.save();
-    // Dibujamos con un pequeño inset de 1.5px para no tapar el brillo del marco dorado
-    drawImageCover(ctx, photo, x + 1.5, y + 1.5, width - 3, height - 3);
-    
-    // Ambientación: Sombra interna sutil
+    // Inset de 8px (a esta resolución) para respetar el borde dorado
+    drawImageCover(ctx, photo, x + 8, y + 8, width - 16, height - 16);
+
+    // Sombra interna sutil para dar profundidad
     const grad = ctx.createRadialGradient(
-      x + width/2, y + height/2, width*0.3,
-      x + width/2, y + height/2, width*0.7
+      x + width / 2, y + height / 2, width * 0.3,
+      x + width / 2, y + height / 2, width * 0.75
     );
     grad.addColorStop(0, 'rgba(0,0,0,0)');
-    grad.addColorStop(1, 'rgba(0,0,0,0.15)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.12)');
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, width, height);
     ctx.restore();
   });
 
+  // ─── Exportar ──────────────────────────────
   const format = options.format || 'blob';
 
   if (format === 'dataurl') {
