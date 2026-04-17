@@ -146,23 +146,44 @@ export default function PhotoBoothCapture() {
   // ── Galería oculta: contador de taps en el emoji ──
   const secretTapsRef   = useRef(0);
   const secretTimerRef  = useRef(null);
+  const [showSecretModal, setShowSecretModal] = useState(false);
+  const [secretPass,      setSecretPass]      = useState('');
+  const [secretError,     setSecretError]     = useState(false);
 
   const handleSecretTap = useCallback(() => {
     secretTapsRef.current += 1;
-    // Resetear el timer en cada tap
     clearTimeout(secretTimerRef.current);
     secretTimerRef.current = setTimeout(() => {
       secretTapsRef.current = 0;
     }, 3000);
-    // Al llegar a 5 taps abre Cloudinary
     if (secretTapsRef.current >= 5) {
       secretTapsRef.current = 0;
       clearTimeout(secretTimerRef.current);
+      setSecretPass('');
+      setSecretError(false);
+      setShowSecretModal(true);
+    }
+  }, []);
+
+  const handleSecretSubmit = useCallback(() => {
+    if (secretPass === 'ana15') {
+      setShowSecretModal(false);
+      setSecretPass('');
+      setSecretError(false);
       window.open(
         'https://console.cloudinary.com/console/media_library/search?q=los_15_de_ana&view_mode=mosaic',
         '_blank'
       );
+    } else {
+      setSecretError(true);
+      setSecretPass('');
     }
+  }, [secretPass]);
+
+  const handleSecretCancel = useCallback(() => {
+    setShowSecretModal(false);
+    setSecretPass('');
+    setSecretError(false);
   }, []);
 
   // ─────────────────────────────────────────────────────
@@ -519,7 +540,79 @@ export default function PhotoBoothCapture() {
         background: 'radial-gradient(ellipse 60% 30% at 80% 20%, rgba(10,50,10,0.14) 0%, transparent 70%)',
       }} />
       {/* ══════════════════════════════════════════════════
-          ELEMENTOS DE MEDIA — siempre montados.
+          MODAL SECRETO: Acceso a Cloudinary
+      ══════════════════════════════════════════════════ */}
+      {showSecretModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.75)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '24px',
+        }}>
+          <div style={{
+            background: COLORS.glass,
+            border: `1px solid ${COLORS.glassBorder}`,
+            boxShadow: `0 0 60px rgba(74,222,128,0.12)`,
+            borderRadius: '24px',
+            padding: '36px 32px',
+            width: '100%', maxWidth: '360px',
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>🔐</div>
+            <h2 style={{
+              margin: '0 0 8px', fontSize: '20px', fontWeight: '800',
+              fontFamily: "'Cinzel', serif",
+              color: COLORS.gold,
+            }}>Acceso Restringido</h2>
+            <p style={{ margin: '0 0 24px', color: COLORS.textMuted, fontSize: '14px' }}>
+              Ingresá la contraseña para ver la galería
+            </p>
+
+            <input
+              type="password"
+              value={secretPass}
+              onChange={e => { setSecretPass(e.target.value); setSecretError(false); }}
+              onKeyDown={e => e.key === 'Enter' && handleSecretSubmit()}
+              placeholder="Contraseña"
+              autoFocus
+              style={{
+                width: '100%', padding: '14px 16px',
+                borderRadius: '12px', fontSize: '16px',
+                background: 'rgba(20,50,20,0.6)',
+                border: `1.5px solid ${secretError ? COLORS.danger : COLORS.glassBorder}`,
+                color: COLORS.text, outline: 'none',
+                boxSizing: 'border-box', marginBottom: '8px',
+                letterSpacing: '0.15em',
+                transition: 'border-color 0.2s',
+              }}
+            />
+
+            {secretError && (
+              <p style={{ margin: '0 0 16px', color: COLORS.danger, fontSize: '13px' }}>
+                Contraseña incorrecta. Intentá de nuevo.
+              </p>
+            )}
+            {!secretError && <div style={{ height: '24px' }} />}
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={handleSecretCancel}
+                style={{ ...bigButtonStyle('secondary'), flex: 1, padding: '14px' }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSecretSubmit}
+                style={{ ...bigButtonStyle('primary'), flex: 1, padding: '14px' }}
+              >
+                Entrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
           El video está posicionado fuera de la pantalla
           cuando no se muestra, para que videoRef.current
           nunca sea null al asignar el stream.
