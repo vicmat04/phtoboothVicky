@@ -24,7 +24,8 @@ import { uploadToCloudinary } from '../services/cloudinaryService.js';
 
 const TOTAL_PHOTOS      = 4;
 const COUNTDOWN_SECONDS = 3;
-const FRAME_URL         = '/assets/frames/quince-frame.png';
+/** URL de la imagen de fondo del diseño */
+const BACKGROUND_URL = '/assets/frames/quince-frame.png';
 
 const CAMERA_CONSTRAINTS = {
   video: {
@@ -309,7 +310,7 @@ export default function PhotoBoothCapture() {
 
       setStatus('processing');
 
-      const dataUrl = await generateQuinceCollage(captured, FRAME_URL, { format: 'dataurl' });
+      const dataUrl = await generateQuinceCollage(captured, BACKGROUND_URL, { format: 'dataurl' });
       setCollageUrl(dataUrl);
       setStatus('done');
 
