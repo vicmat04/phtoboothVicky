@@ -23,10 +23,10 @@ const OUTPUT_MIME  = 'image/jpeg';
 // ─── Layout premium ──────────────────────────
 // Estas constantes controlan el "aire" del diseño.
 
-const OUTER_PAD   = 110;   // margen exterior del canvas (fotos ~15% más chicas)
-const GAP         = 20;    // separación entre fotos
-const HEADER_H    = 150;   // espacio para el título superior
-const FOOTER_H    = 80;    // espacio para la fecha inferior
+const OUTER_PAD   = 160;   // Margen lateral mayor para achicar fotos (-25%)
+const GAP         = 24;    // Más separación
+const HEADER_H    = 180;   // Más aire arriba
+const FOOTER_H    = 110;   // Más aire abajo
 const PHOTO_R     = 14;    // radio de las esquinas redondeadas
 const BORDER_W    = 2.5;   // grosor del borde dorado
 
