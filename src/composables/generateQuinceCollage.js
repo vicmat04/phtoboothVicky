@@ -23,10 +23,10 @@ const OUTPUT_MIME  = 'image/jpeg';
 // Coordenadas calculadas para el diseño vertical Black & Gold
 
 const GRID_CELLS = [
-  { x: 44,  y: 237, width: 288, height: 310 }, // Fila 1 - Izq
-  { x: 348, y: 237, width: 288, height: 310 }, // Fila 1 - Der
-  { x: 44,  y: 563, width: 288, height: 310 }, // Fila 2 - Izq
-  { x: 348, y: 563, width: 288, height: 310 }, // Fila 2 - Der
+  { x: 53,  y: 246, width: 280, height: 298 }, // Fila 1 - Izq (Ajustado)
+  { x: 349, y: 246, width: 280, height: 298 }, // Fila 1 - Der (Ajustado)
+  { x: 53,  y: 562, width: 280, height: 298 }, // Fila 2 - Izq (Ajustado)
+  { x: 349, y: 562, width: 280, height: 298 }, // Fila 2 - Der (Ajustado)
 ];
 
 // ─────────────────────────────────────────────
