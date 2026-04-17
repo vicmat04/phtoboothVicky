@@ -37,23 +37,26 @@ const CAMERA_CONSTRAINTS = {
 };
 
 // ─────────────────────────────────────────────
-// Design system tokens
+// Design system tokens — Enchanted Forest theme
 // ─────────────────────────────────────────────
 
 const COLORS = {
-  bg:          '#0F0A1E',
-  surface:     'rgba(255,255,255,0.05)',
-  glass:       'rgba(255,255,255,0.08)',
-  glassBorder: 'rgba(255,255,255,0.15)',
-  primary:     '#C084FC',
-  primaryDark: '#9333EA',
-  accent:      '#F472B6',
-  accentGlow:  'rgba(244,114,182,0.4)',
-  text:        '#F8FAFC',
-  textMuted:   '#94A3B8',
-  success:     '#34D399',
-  danger:      '#F87171',
-  countdown:   '#FDE68A',
+  bg:          '#070d07',        // negro forestal profundo
+  surface:     'rgba(20, 50, 20, 0.45)',
+  glass:       'rgba(10, 35, 10, 0.65)',
+  glassBorder: 'rgba(100, 200, 80, 0.2)',
+  primary:     '#4ade80',        // verde menta brillante
+  primaryDark: '#16a34a',        // verde bosque
+  accent:      '#a3e635',        // lima dorado
+  accentGlow:  'rgba(74, 222, 128, 0.35)',
+  gold:        '#d4a853',        // dorado cálido
+  goldGlow:    'rgba(212, 168, 83, 0.4)',
+  firefly:     '#c8ff00',        // amarillo-verde luciérnaga
+  text:        '#e8f5e9',        // blanco verdoso
+  textMuted:   '#6b9e72',        // verde apagado
+  success:     '#4ade80',
+  danger:      '#f87171',
+  countdown:   '#ffd700',        // dorado para countdown
 };
 
 // ─────────────────────────────────────────────
@@ -409,28 +412,33 @@ export default function PhotoBoothCapture() {
 
   const containerStyle = {
     minHeight:      '100vh',
-    background:     `radial-gradient(ellipse at top, #1e0a3c 0%, ${COLORS.bg} 60%)`,
+    background:     'radial-gradient(ellipse at 50% 0%, #0d2e0d 0%, #050f05 45%, #020702 100%)',
     display:        'flex',
     flexDirection:  'column',
     alignItems:     'center',
     justifyContent: 'center',
     padding:        '24px',
-    fontFamily:     "'Inter', system-ui, -apple-system, sans-serif",
+    fontFamily:     "'Cinzel', 'Georgia', serif",
     color:          COLORS.text,
     boxSizing:      'border-box',
     gap:            '24px',
+    position:       'relative',
+    overflow:       'hidden',
   };
 
   const glassCardStyle = {
     background:          COLORS.glass,
-    backdropFilter:      'blur(12px)',
-    WebkitBackdropFilter:'blur(12px)',
+    backdropFilter:      'blur(16px)',
+    WebkitBackdropFilter:'blur(16px)',
     borderRadius:        '24px',
     border:              `1px solid ${COLORS.glassBorder}`,
+    boxShadow:           `0 0 40px rgba(74, 222, 128, 0.08), inset 0 1px 0 rgba(100,200,80,0.15)`,
     padding:             '24px',
     width:               '100%',
     maxWidth:            '720px',
     boxSizing:           'border-box',
+    position:            'relative',
+    zIndex:              1,
   };
 
   const bigButtonStyle = (variant = 'primary') => ({
@@ -442,22 +450,25 @@ export default function PhotoBoothCapture() {
     fontFamily:    'inherit',
     cursor:        'pointer',
     border:        'none',
-    transition:    'all 0.2s ease',
-    letterSpacing: '0.03em',
+    transition:    'all 0.25s ease',
+    letterSpacing: '0.05em',
+    textTransform: 'uppercase',
     ...(variant === 'primary' && {
-      background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.accent})`,
-      color:      '#fff',
-      boxShadow:  `0 4px 24px ${COLORS.accentGlow}`,
+      background: `linear-gradient(135deg, ${COLORS.primaryDark} 0%, ${COLORS.primary} 60%, ${COLORS.accent} 100%)`,
+      color:      '#020d02',
+      fontWeight: '900',
+      boxShadow:  `0 4px 28px ${COLORS.accentGlow}, 0 0 60px rgba(74,222,128,0.15)`,
     }),
     ...(variant === 'secondary' && {
-      background: 'rgba(255,255,255,0.08)',
+      background: 'rgba(20, 60, 20, 0.6)',
       color:      COLORS.text,
       border:     `1px solid ${COLORS.glassBorder}`,
     }),
     ...(variant === 'success' && {
-      background: `linear-gradient(135deg, ${COLORS.success}, #059669)`,
-      color:      '#fff',
-      boxShadow:  '0 4px 24px rgba(52,211,153,0.35)',
+      background: `linear-gradient(135deg, ${COLORS.gold}, #b8860b)`,
+      color:      '#020d02',
+      fontWeight: '900',
+      boxShadow:  `0 4px 28px ${COLORS.goldGlow}`,
     }),
   });
 
@@ -468,6 +479,23 @@ export default function PhotoBoothCapture() {
   return (
     <div style={containerStyle}>
 
+      {/* ══════════════════════════════════════════════════
+          LUCIÉRNAGAS — partículas animadas de fondo
+          Posicionadas absolutamente detrás del contenido.
+      ══════════════════════════════════════════════════ */}
+      <Fireflies />
+
+      {/* ══════════════════════════════════════════════════
+          NIEBLA DEL BOSQUE — capas de bruma verde
+      ══════════════════════════════════════════════════ */}
+      <div style={{
+        position:   'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        background: 'radial-gradient(ellipse 80% 40% at 20% 80%, rgba(20,80,20,0.18) 0%, transparent 70%)',
+      }} />
+      <div style={{
+        position:   'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        background: 'radial-gradient(ellipse 60% 30% at 80% 20%, rgba(10,50,10,0.14) 0%, transparent 70%)',
+      }} />
       {/* ══════════════════════════════════════════════════
           ELEMENTOS DE MEDIA — siempre montados.
           El video está posicionado fuera de la pantalla
@@ -490,30 +518,41 @@ export default function PhotoBoothCapture() {
       {status === 'idle' && (
         <div style={glassCardStyle}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <div style={{ fontSize: '56px', marginBottom: '8px' }}>👑</div>
+            <div style={{ fontSize: '52px', marginBottom: '8px' }}>🌿</div>
             <h1 style={{
-              margin:       0, fontSize: '32px', fontWeight: '800',
-              background:   `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.accent})`,
+              margin: 0, fontSize: '28px', fontWeight: '800',
+              fontFamily: "'Cinzel', 'Georgia', serif",
+              background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.primary}, ${COLORS.accent})`,
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+              letterSpacing: '0.06em',
+              textShadow: 'none',
             }}>
-              PhotoBooth
+              Los XI de Vicky
             </h1>
-            <p style={{ margin: '8px 0 0', color: COLORS.textMuted, fontSize: '16px' }}>
-              Capturá 4 fotos y creá tu collage de quinceañera
+            <p style={{
+              margin: '4px 0 0', color: COLORS.gold, fontSize: '13px',
+              letterSpacing: '0.2em', textTransform: 'uppercase',
+              fontFamily: "'Cinzel', serif",
+            }}>
+              Bosque Encantado · 18 Abril 2026
+            </p>
+            <p style={{ margin: '12px 0 0', color: COLORS.textMuted, fontSize: '15px' }}>
+              Capturá tus momentos mágicos
             </p>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
             {[
               { icon: '📸', label: '4 capturas automáticas' },
-              { icon: '⏱️', label: 'Cuenta regresiva de 3s' },
-              { icon: '🖼️', label: 'Marco decorativo incluido' },
+              { icon: '✨', label: 'Cuenta regresiva de 3s' },
+              { icon: '🌿', label: 'Diseño bosque encantado' },
               { icon: '📱', label: 'Compartí por WhatsApp' },
             ].map(({ icon, label }) => (
               <div key={label} style={{
                 background: COLORS.surface, borderRadius: '12px', padding: '16px',
                 display: 'flex', alignItems: 'center', gap: '12px',
                 fontSize: '14px', color: COLORS.textMuted,
+                border: `1px solid ${COLORS.glassBorder}`,
               }}>
                 <span style={{ fontSize: '24px' }}>{icon}</span>
                 {label}
@@ -801,11 +840,12 @@ export default function PhotoBoothCapture() {
 
       {/* CSS global */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Inter:wght@400;600;700;800;900&display=swap');
         * { box-sizing: border-box; }
+
         @keyframes pulse {
           0%, 100% { opacity: 1; }
-          50%       { opacity: 0.6; }
+          50%       { opacity: 0.55; }
         }
         @keyframes countdownPop {
           0%   { transform: scale(1.4); opacity: 0; }
@@ -815,15 +855,89 @@ export default function PhotoBoothCapture() {
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
+
+        /* Luciérnagas */
+        @keyframes fireflyFloat {
+          0%   { transform: translate(0, 0)   scale(1);    opacity: 0; }
+          15%  { opacity: 1; }
+          50%  { transform: translate(var(--fx), var(--fy)) scale(1.3); opacity: 0.9; }
+          85%  { opacity: 0.6; }
+          100% { transform: translate(0, 0)   scale(0.8); opacity: 0; }
+        }
+        @keyframes fireflyGlow {
+          0%, 100% { box-shadow: 0 0 4px 2px rgba(200,255,0,0.6); }
+          50%       { box-shadow: 0 0 10px 5px rgba(200,255,0,0.95), 0 0 20px 8px rgba(180,255,20,0.4); }
+        }
+
+        /* Niebla del bosque */
+        @keyframes mistDrift {
+          0%, 100% { transform: translateX(0)   opacity: 0.6; }
+          50%       { transform: translateX(30px); opacity: 1; }
+        }
+
         button:not(:disabled):hover {
           transform: translateY(-2px);
-          filter: brightness(1.1);
+          filter: brightness(1.12);
         }
         button:not(:disabled):active {
           transform: translateY(0);
-          filter: brightness(0.95);
+          filter: brightness(0.92);
         }
+
+        input:focus { outline: 2px solid rgba(74,222,128,0.5) !important; }
       `}</style>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Sub-componente: Luciérnagas animadas
+//
+// Genera N partículas con posición, tamaño, delay
+// y dirección de flotación aleatorios.
+// Se renderizan con position:fixed detrás de todo el contenido.
+// ─────────────────────────────────────────────
+
+const FIREFLY_COUNT = 20;
+
+function Fireflies() {
+  // Generamos datos aleatorios UNA vez (durante el montaje).
+  // useMemo no es necesario porque el componente rara vez se re-renderiza.
+  const flies = Array.from({ length: FIREFLY_COUNT }, (_, i) => ({
+    id:       i,
+    left:     `${Math.random() * 100}%`,
+    top:      `${Math.random() * 100}%`,
+    size:     3 + Math.random() * 4,           // 3–7px
+    duration: 4 + Math.random() * 8,           // 4–12s
+    delay:    Math.random() * 6,               // 0–6s
+    fx:       `${(Math.random() - 0.5) * 120}px`, // desplazamiento X
+    fy:       `${(Math.random() - 0.5) * 100}px`, // desplazamiento Y
+  }));
+
+  return (
+    <div
+      aria-hidden="true"
+      style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}
+    >
+      {flies.map((f) => (
+        <div
+          key={f.id}
+          style={{
+            position:       'absolute',
+            left:           f.left,
+            top:            f.top,
+            width:          `${f.size}px`,
+            height:         `${f.size}px`,
+            borderRadius:   '50%',
+            background:     COLORS.firefly,
+            animation:      `fireflyFloat ${f.duration}s ease-in-out ${f.delay}s infinite,
+                             fireflyGlow ${f.duration * 0.6}s ease-in-out ${f.delay}s infinite`,
+            '--fx':         f.fx,
+            '--fy':         f.fy,
+            willChange:     'transform, opacity',
+          }}
+        />
+      ))}
     </div>
   );
 }
