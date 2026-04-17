@@ -312,13 +312,22 @@ export default function PhotoBoothCapture() {
         setPhotos([...captured]);
       }
 
+      // ── Paso 1: generar el collage en canvas ──────────────
       setStatus('processing');
+      const blob = await generateQuinceCollage(captured, BACKGROUND_URL, { format: 'blob' });
 
-      const dataUrl = await generateQuinceCollage(captured, BACKGROUND_URL, { format: 'dataurl' });
-      setCollageUrl(dataUrl);
+      // ── Paso 2: subir automáticamente a Cloudinary ────────
+      // Cada collage queda guardado independientemente de si el
+      // usuario lo comparte por WhatsApp o no.
+      setIsUploading(true);
+      const secureUrl = await uploadToCloudinary(blob);
+      setIsUploading(false);
+
+      setCollageUrl(secureUrl);   // URL pública de Cloudinary
       setStatus('done');
 
     } catch (err) {
+      setIsUploading(false);
       const userMsg = err.message.includes('mara')
         ? err.message
         : `Error al generar el collage: ${err.message}`;
@@ -326,6 +335,7 @@ export default function PhotoBoothCapture() {
       setStatus('error');
     }
   }, [runCountdownAndCapture]);
+
 
   // ─────────────────────────────────────────────────────
   // Lógica: Reiniciar
@@ -365,24 +375,13 @@ export default function PhotoBoothCapture() {
     }
     if (!collageUrl) return;
 
-    setIsUploading(true);
-    setSentSuccess(false);
-
-    try {
-      const response  = await fetch(collageUrl);
-      const blob      = await response.blob();
-      const secureUrl = await uploadToCloudinary(blob);
-      const text      = `¡Mira mi foto en los 15 de Ana! 🎉 ${secureUrl}`;
-      const waLink    = `https://wa.me/507${whatsappNumber}?text=${encodeURIComponent(text)}`;
-
-      window.open(waLink, '_blank');
-      setSentSuccess(true);
-      setTimeout(() => handleReset(), 15000);
-    } catch (err) {
-      alert(`Error al enviar: ${err.message}`);
-    } finally {
-      setIsUploading(false);
-    }
+    // El collage ya está en Cloudinary (se subió automáticamente al generarse).
+    // Solo construimos el link de WhatsApp y lo abrimos.
+    const text   = `¡Mira mi foto en los XI de Ana Victoria! 🎉 ${collageUrl}`;
+    const waLink = `https://wa.me/507${whatsappNumber}?text=${encodeURIComponent(text)}`;
+    window.open(waLink, '_blank');
+    setSentSuccess(true);
+    setTimeout(() => handleReset(), 15000);
   }, [whatsappNumber, collageUrl, handleReset]);
 
   // ─────────────────────────────────────────────────────
@@ -401,7 +400,7 @@ export default function PhotoBoothCapture() {
           : `¡Capturando Foto ${currentPhotoIndex + 1}!`
         : `Foto ${currentPhotoIndex + 1} de ${TOTAL_PHOTOS}`;
     }
-    if (status === 'processing') return 'Generando tu collage...';
+    if (status === 'processing') return isUploading ? 'Subiendo a la nube... ☁️' : 'Generando tu collage...';
     if (status === 'done')       return '¡Collage listo! 🎉';
     if (status === 'previewing') return 'Listo para empezar';
     return '';
