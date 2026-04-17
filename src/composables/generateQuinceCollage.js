@@ -1,32 +1,32 @@
 /**
  * ============================================================
- * Módulo B: Motor de Collage Premium — Film Strip Edition
+ * Módulo B: Motor de Collage Premium — Gold & Black Edition
  * ============================================================
  *
- * Adaptado para el diseño de "Los XI de Ana Victoria".
- * Ajusta 4 fotos exactamente sobre los recuadros blancos de
- * los rollos de película (film strips).
+ * Adaptado para el diseño vertical de "Los XI de Ana Victoria".
+ * Ajusta 4 fotos en una grilla 2x2 dentro de marcos dorados.
+ * Proporción de salida: 682x1024 (Vertical).
  *
  * @module generateQuinceCollage
  */
 
 // ─────────────────────────────────────────────
-// Constantes del motor (Ajustadas a 1024x682)
+// Constantes del motor (Vertical: 682x1024)
 // ─────────────────────────────────────────────
 
-const CANVAS_W     = 1024;
-const CANVAS_H     = 682;
+const CANVAS_W     = 682;
+const CANVAS_H     = 1024;
 const JPEG_QUALITY = 0.95;
 const OUTPUT_MIME  = 'image/jpeg';
 
-// ─── Layout de Film Strips ────────────────────
-// Coordenadas calculadas para el diseño enviado
+// ─── Layout de Grilla 2x2 ──────────────────
+// Coordenadas calculadas para el diseño vertical Black & Gold
 
-const FILM_CELLS = [
-  { x: 312, y: 142, width: 198, height: 148 }, // Top-Left
-  { x: 510, y: 142, width: 198, height: 148 }, // Top-Right
-  { x: 318, y: 396, width: 198, height: 148 }, // Bottom-Left
-  { x: 516, y: 396, width: 198, height: 148 }, // Bottom-Right
+const GRID_CELLS = [
+  { x: 44,  y: 237, width: 288, height: 310 }, // Fila 1 - Izq
+  { x: 348, y: 237, width: 288, height: 310 }, // Fila 1 - Der
+  { x: 44,  y: 563, width: 288, height: 310 }, // Fila 2 - Izq
+  { x: 348, y: 563, width: 288, height: 310 }, // Fila 2 - Der
 ];
 
 // ─────────────────────────────────────────────
@@ -72,52 +72,48 @@ export async function generateQuinceCollage(
   backgroundUrl,
   options = {}
 ) {
-  // ─── Validación ─────────────────────────────
   if (!Array.isArray(photosBase64) || photosBase64.length < 1) {
     throw new Error(`Se requieren fotos para generar el collage.`);
   }
 
-  // ─── Canvas ─────────────────────────────────
   const canvas  = document.createElement('canvas');
   canvas.width  = CANVAS_W;
   canvas.height = CANVAS_H;
   const ctx     = canvas.getContext('2d');
 
-  // Fondo base
+  // Fondo base negro
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-  // ─── Carga en paralelo ──────────────────────
+  // Carga asíncrona
   const [bgImg, ...photoImgs] = await Promise.all([
     loadImage(backgroundUrl),
     ...photosBase64.slice(0, 4).map(loadImage),
   ]);
 
-  // ─── CAPA 1: Background completo de Vicky ───
+  // CAPA 1: Background Vertical (682x1024)
   ctx.drawImage(bgImg, 0, 0, CANVAS_W, CANVAS_H);
 
-  // ─── CAPA 2: Fotos en Film Strips ───────────
+  // CAPA 2: Fotos en marcos dorados
   photoImgs.forEach((photo, i) => {
-    const { x, y, width, height } = FILM_CELLS[i];
+    const { x, y, width, height } = GRID_CELLS[i];
     
     ctx.save();
-    // Dibujamos la foto. Usamos un pequeño margen para no tocar
-    // los bordes negros del film strip si la alineación no es perfecta.
-    drawImageCover(ctx, photo, x + 1, y + 1, width - 2, height - 2);
+    // Dibujamos con un pequeño inset de 1.5px para no tapar el brillo del marco dorado
+    drawImageCover(ctx, photo, x + 1.5, y + 1.5, width - 3, height - 3);
     
-    // Opcional: Una sombra interior muy tenue para darle profundidad
+    // Ambientación: Sombra interna sutil
     const grad = ctx.createRadialGradient(
       x + width/2, y + height/2, width*0.3,
       x + width/2, y + height/2, width*0.7
     );
     grad.addColorStop(0, 'rgba(0,0,0,0)');
-    grad.addColorStop(1, 'rgba(0,0,0,0.1)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.15)');
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, width, height);
     ctx.restore();
   });
 
-  // ─── Exportar ───────────────────────────────
   const format = options.format || 'blob';
 
   if (format === 'dataurl') {

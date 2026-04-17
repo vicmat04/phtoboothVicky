@@ -29,9 +29,9 @@ const BACKGROUND_URL = '/assets/frames/quince-frame.png';
 
 const CAMERA_CONSTRAINTS = {
   video: {
-    width:      { ideal: 1280 },
-    height:     { ideal: 960 },
-    aspectRatio: 1.333,
+    width:      { ideal: 1080 },
+    height:     { ideal: 1080 },
+    aspectRatio: 1,
     facingMode: 'user',
   },
   audio: false,
@@ -69,7 +69,7 @@ function PhotoSlot({ index, photoSrc, isActive }) {
 
   const baseStyle = {
     width:          '100%',
-    aspectRatio:    '4 / 3',
+    aspectRatio:    '1 / 1',
     borderRadius:   '12px',
     overflow:       'hidden',
     border:         `2px solid ${isActive ? COLORS.accent : COLORS.glassBorder}`,
@@ -726,7 +726,7 @@ export default function PhotoBoothCapture() {
           {/* Video container */}
           <div style={{
             position:     'relative', borderRadius: '16px', overflow: 'hidden',
-            aspectRatio:  '4 / 3',  background: '#000',
+            aspectRatio:  '1 / 1',  background: '#000',
             border:       `1px solid ${COLORS.glassBorder}`,
             boxShadow:    isCapturing && countdown !== null && typeof countdown === 'string'
               ? `0 0 0 4px ${COLORS.accent}, 0 0 60px ${COLORS.accentGlow}`
