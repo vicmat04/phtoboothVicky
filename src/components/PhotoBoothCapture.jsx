@@ -143,6 +143,28 @@ export default function PhotoBoothCapture() {
   const [isUploading,      setIsUploading]      = useState(false);
   const [sentSuccess,      setSentSuccess]      = useState(false);
 
+  // ── Galería oculta: contador de taps en el emoji ──
+  const secretTapsRef   = useRef(0);
+  const secretTimerRef  = useRef(null);
+
+  const handleSecretTap = useCallback(() => {
+    secretTapsRef.current += 1;
+    // Resetear el timer en cada tap
+    clearTimeout(secretTimerRef.current);
+    secretTimerRef.current = setTimeout(() => {
+      secretTapsRef.current = 0;
+    }, 3000);
+    // Al llegar a 5 taps abre Cloudinary
+    if (secretTapsRef.current >= 5) {
+      secretTapsRef.current = 0;
+      clearTimeout(secretTimerRef.current);
+      window.open(
+        'https://console.cloudinary.com/console/media_library/search?q=los_15_de_ana&view_mode=mosaic',
+        '_blank'
+      );
+    }
+  }, []);
+
   // ─────────────────────────────────────────────────────
   // Efecto: conectar el stream al <video> cuando el
   // componente ya montó el elemento y el stream está listo.
@@ -518,7 +540,11 @@ export default function PhotoBoothCapture() {
       {status === 'idle' && (
         <div style={glassCardStyle}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <div style={{ fontSize: '52px', marginBottom: '8px' }}>🌿</div>
+            <div
+              onClick={handleSecretTap}
+              style={{ fontSize: '52px', marginBottom: '8px', cursor: 'default', userSelect: 'none' }}
+              title=""
+            >🌿</div>
             <h1 style={{
               margin: 0, fontSize: '28px', fontWeight: '800',
               fontFamily: "'Cinzel', 'Georgia', serif",
