@@ -70,16 +70,22 @@ const COLORS = {
 
 function useOrientation() {
   const getIsLandscape = () => {
-    // Método 1: Screen Orientation API — más fiable en dispositivos táctiles
+    if (typeof window === 'undefined') return false;
+    const isPortraitUA = /iPhone|iPod|Android.*Mobile/i.test(navigator.userAgent);
+    
+    // Método 1: Por dimensiones reales (el más honesto)
+    const byDimensions = window.innerWidth > window.innerHeight;
+    
+    // Método 2: Screen Orientation API
+    let byAPI = false;
     if (typeof screen !== 'undefined' && screen.orientation?.type) {
-      return screen.orientation.type.startsWith('landscape');
+      byAPI = screen.orientation.type.startsWith('landscape');
     }
-    // Método 2: matchMedia
-    if (typeof window !== 'undefined' && window.matchMedia) {
-      return window.matchMedia('(orientation: landscape)').matches;
-    }
-    // Método 3: comparación de dimensiones
-    return window.innerWidth > window.innerHeight;
+    
+    // Método 3: matchMedia
+    const byMQ = window.matchMedia?.('(orientation: landscape)').matches;
+
+    return byDimensions || byAPI || byMQ;
   };
 
   const [isLandscape, setIsLandscape] = useState(getIsLandscape);
@@ -87,26 +93,26 @@ function useOrientation() {
   useEffect(() => {
     const update = () => setIsLandscape(getIsLandscape());
 
-    // Screen Orientation API — el más confiable en tablets
+    // Listeners estándar
     screen.orientation?.addEventListener('change', update);
-
-    // matchMedia — navegadores de escritorio y algunos tablets
     const mq = window.matchMedia?.('(orientation: landscape)');
     mq?.addEventListener('change', update);
-
-    // resize — fallback universal
     window.addEventListener('resize', update);
-
-    // visibilitychange — re-evalúa al volver a la pestaña tras rotar
+    window.addEventListener('orientationchange', update);
     document.addEventListener('visibilitychange', update);
+
+    // HEARTBEAT: Brute force polling cada 1s por si el browser no dispara eventos
+    const interval = setInterval(update, 1000);
 
     return () => {
       screen.orientation?.removeEventListener('change', update);
       mq?.removeEventListener('change', update);
       window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
       document.removeEventListener('visibilitychange', update);
+      clearInterval(interval);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); 
 
   return isLandscape;
 }
@@ -575,6 +581,24 @@ export default function PhotoBoothCapture() {
 
   return (
     <div style={containerStyle}>
+      {/* ─────────────────────────────────────────────────────
+          DEBUG BADGE & CSS FALLBACK
+      ───────────────────────────────────────────────────── */}
+      <style>{`
+        @media (orientation: landscape) {
+          #root { width: 100vw !important; }
+        }
+      `}</style>
+
+      <div style={{
+        position: 'fixed', top: '10px', left: '10px', zIndex: 10000,
+        background: isLandscape ? '#22c55e' : '#ef4444',
+        color: '#fff', padding: '4px 8px', borderRadius: '6px',
+        fontSize: '10px', fontWeight: 'bold', pointerEvents: 'none',
+        opacity: 0.8, border: '1px solid rgba(255,255,255,0.2)'
+      }}>
+        {isLandscape ? 'ORIENTACIÓN: LANDSCAPE (OK)' : 'ORIENTACIÓN: PORTRAIT'}
+      </div>
 
       {/* ══════════════════════════════════════════════════
           LUCIÉRNAGAS — partículas animadas de fondo
