@@ -995,11 +995,12 @@ export default function PhotoBoothCapture() {
 
           {/* ── Columna izquierda: VIDEO ─────────────────── */}
           <div style={{
-            flex:          isLandscape ? '0 0 auto' : undefined,
-            width:         isLandscape ? 'min(48vh, 50%)' : '100%',
+            flex:          isLandscape ? '1.4' : undefined,
+            width:         isLandscape ? 'min(55vh, 60%)' : '100%',
             display:       'flex',
             flexDirection: 'column',
-            gap:           '16px',
+            gap:           isLandscape ? '12px' : '16px',
+            minWidth:      0,
           }}>
 
             {/* Header — portrait */}
@@ -1107,12 +1108,13 @@ export default function PhotoBoothCapture() {
 
           {/* ── Columna derecha: CONTROLES ──────────────── */}
           <div style={{
-            flex:           1,
+            flex:           isLandscape ? '1' : 1,
             display:        'flex',
             flexDirection:  'column',
-            gap:            '16px',
+            gap:            isLandscape ? '12px' : '16px',
             justifyContent: isLandscape ? 'space-between' : 'flex-start',
             minWidth:       0,
+            maxWidth:       isLandscape ? '380px' : 'none',
           }}>
 
             {/* Header — landscape */}
@@ -1133,7 +1135,7 @@ export default function PhotoBoothCapture() {
 
             {/* Miniaturas — landscape: grid 2×2 en la columna derecha */}
             {isLandscape && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                 {Array.from({ length: TOTAL_PHOTOS }).map((_, i) => (
                   <PhotoSlot
                     key={i}
