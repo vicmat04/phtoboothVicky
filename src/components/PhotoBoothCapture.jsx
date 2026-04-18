@@ -690,7 +690,7 @@ export default function PhotoBoothCapture() {
           </div>
         </div>
       )}
-
+      {/* ══════════════════════════════════════════════════
           El video está posicionado fuera de la pantalla
           cuando no se muestra, para que videoRef.current
           nunca sea null al asignar el stream.
