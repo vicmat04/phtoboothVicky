@@ -61,6 +61,31 @@ const COLORS = {
 };
 
 // ─────────────────────────────────────────────
+// Hook: Detecta orientación del dispositivo
+// Reactivo al girar la tablet en tiempo real.
+// ─────────────────────────────────────────────
+
+function useOrientation() {
+  const getMatch = () => window.matchMedia('(orientation: landscape)').matches;
+  const [isLandscape, setIsLandscape] = useState(getMatch);
+
+  useEffect(() => {
+    const mq      = window.matchMedia('(orientation: landscape)');
+    const handler = (e) => setIsLandscape(e.matches);
+    mq.addEventListener('change', handler);
+    // Fallback: resize event para tablets que no disparan el media query
+    const onResize = () => setIsLandscape(window.innerWidth > window.innerHeight);
+    window.addEventListener('resize', onResize);
+    return () => {
+      mq.removeEventListener('change', handler);
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+
+  return isLandscape;
+}
+
+// ─────────────────────────────────────────────
 // Sub-componente: Miniatura de foto capturada
 // ─────────────────────────────────────────────
 
@@ -149,6 +174,9 @@ export default function PhotoBoothCapture() {
   const [showSecretModal, setShowSecretModal] = useState(false);
   const [secretPass,      setSecretPass]      = useState('');
   const [secretError,     setSecretError]     = useState(false);
+
+  // ── Orientación del dispositivo (reactivo al girar la tablet) ──
+  const isLandscape = useOrientation();
 
   const handleSecretTap = useCallback(() => {
     secretTapsRef.current += 1;
@@ -454,19 +482,19 @@ export default function PhotoBoothCapture() {
   // ─────────────────────────────────────────────────────
 
   const containerStyle = {
-    minHeight:      '100vh',
+    minHeight:      '100dvh',
     background:     'radial-gradient(ellipse at 50% 0%, #0d2e0d 0%, #050f05 45%, #020702 100%)',
     display:        'flex',
     flexDirection:  'column',
     alignItems:     'center',
     justifyContent: 'center',
-    padding:        '24px',
+    padding:        isLandscape ? '12px 16px' : '24px',
     fontFamily:     "'Cinzel', 'Georgia', serif",
     color:          COLORS.text,
     boxSizing:      'border-box',
-    gap:            '24px',
+    gap:            isLandscape ? '12px' : '24px',
     position:       'relative',
-    overflow:       'hidden',
+    overflow:       'auto',
   };
 
   const glassCardStyle = {
@@ -716,24 +744,58 @@ export default function PhotoBoothCapture() {
           PANTALLA: DONE — collage final + WhatsApp
       ══════════════════════════════════════════════════ */}
       {status === 'done' && collageUrl && (
-        <div style={glassCardStyle}>
-          <h2 style={{
-            textAlign: 'center', margin: '0 0 20px', fontSize: '24px', fontWeight: '700',
-            background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.accent})`,
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-          }}>
-            ¡Tu collage está listo! 🎉
-          </h2>
+        <div style={{
+          ...glassCardStyle,
+          display:       isLandscape ? 'flex' : 'block',
+          flexDirection: isLandscape ? 'row' : undefined,
+          gap:           isLandscape ? '20px' : undefined,
+          alignItems:    isLandscape ? 'flex-start' : undefined,
+          maxWidth:      isLandscape ? 'none' : '720px',
+          padding:       isLandscape ? '16px' : '24px',
+        }}>
 
+          {/* ── Columna izquierda: COLLAGE ───────────────── */}
           <div style={{
-            borderRadius: '16px', overflow: 'hidden', marginBottom: '20px',
-            border: `1px solid ${COLORS.glassBorder}`,
-            boxShadow: `0 8px 40px rgba(192, 132, 252, 0.3)`,
+            flex:  isLandscape ? '0 0 auto' : undefined,
+            width: isLandscape ? 'min(44vh, 46%)' : '100%',
           }}>
-            <img src={collageUrl} alt="Collage quinceañera" style={{ width: '100%', display: 'block' }} />
+            {!isLandscape && (
+              <h2 style={{
+                textAlign: 'center', margin: '0 0 20px', fontSize: '24px', fontWeight: '700',
+                background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.accent})`,
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+              }}>
+                ¡Tu collage está listo! 🎉
+              </h2>
+            )}
+            <div style={{
+              borderRadius: '16px', overflow: 'hidden',
+              marginBottom: isLandscape ? 0 : '20px',
+              border: `1px solid ${COLORS.glassBorder}`,
+              boxShadow: `0 8px 40px rgba(192, 132, 252, 0.3)`,
+            }}>
+              <img src={collageUrl} alt="Collage quinceañera" style={{ width: '100%', display: 'block' }} />
+            </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* ── Columna derecha: CONTROLES ───────────────── */}
+          <div style={{
+            flex:          isLandscape ? 1 : undefined,
+            display:       'flex',
+            flexDirection: 'column',
+            gap:           '16px',
+            minWidth:      0,
+          }}>
+            {isLandscape && (
+              <h2 style={{
+                margin: '0 0 4px', fontSize: '20px', fontWeight: '700',
+                background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.accent})`,
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+              }}>
+                ¡Tu collage está listo! 🎉
+              </h2>
+            )}
+
             {/* Sección WhatsApp */}
             <div style={{
               background: 'rgba(255,255,255,0.05)', padding: '16px',
@@ -825,135 +887,200 @@ export default function PhotoBoothCapture() {
           unifica en el mismo nodo del DOM.
       ══════════════════════════════════════════════════ */}
       {showCamera && (
-        <div style={{ ...glassCardStyle, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{
+          ...glassCardStyle,
+          display:       'flex',
+          flexDirection: isLandscape ? 'row' : 'column',
+          gap:           '20px',
+          alignItems:    isLandscape ? 'flex-start' : 'stretch',
+          maxWidth:      isLandscape ? 'none' : '720px',
+          padding:       isLandscape ? '16px' : '24px',
+        }}>
 
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>PhotoBooth</h2>
-            {(isCapturing || isProcessing) && (
-              <span style={{
-                background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.accent})`,
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                fontSize: '14px', fontWeight: '700',
-              }}>
-                {getStatusLabel()}
-              </span>
-            )}
-          </div>
-
-          {/* Video container */}
+          {/* ── Columna izquierda: VIDEO ─────────────────── */}
           <div style={{
-            position:     'relative', borderRadius: '16px', overflow: 'hidden',
-            aspectRatio:  '1 / 1',  background: '#000',
-            border:       `1px solid ${COLORS.glassBorder}`,
-            boxShadow:    isCapturing && countdown !== null && typeof countdown === 'string'
-              ? `0 0 0 4px ${COLORS.accent}, 0 0 60px ${COLORS.accentGlow}`
-              : 'none',
-            transition:   'box-shadow 0.15s ease',
+            flex:          isLandscape ? '0 0 auto' : undefined,
+            width:         isLandscape ? 'min(48vh, 50%)' : '100%',
+            display:       'flex',
+            flexDirection: 'column',
+            gap:           '16px',
           }}>
-            {/* ─── Espejo visual del <video> real ───
-                Usamos un <video> independiente que apunta al mismo stream
-                (NO el mismo ref) — así el videoRef sigue apuntando al
-                elemento hidden que recibió el stream, evitando doble
-                asignación de srcObject. */}
-            <VideoMirror streamRef={streamRef} />
 
-            {/* Overlay: cuenta regresiva */}
-            {isCapturing && countdown !== null && (
-              <div style={{
-                position: 'absolute', inset: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background:     typeof countdown === 'string' ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.4)',
-                backdropFilter: 'blur(2px)',
-              }}>
-                <span style={{
-                  fontSize:   typeof countdown === 'number' ? '120px' : '80px',
-                  fontWeight: '900',
-                  color:      typeof countdown === 'number' ? COLORS.countdown : COLORS.accent,
-                  textShadow: '0 0 40px currentColor',
-                  lineHeight: 1,
-                  animation:  typeof countdown === 'number' ? 'countdownPop 1s ease-out' : 'none',
-                }}>
-                  {countdown}
-                </span>
+            {/* Header — portrait */}
+            {!isLandscape && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>PhotoBooth</h2>
+                {(isCapturing || isProcessing) && (
+                  <span style={{
+                    background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.accent})`,
+                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                    fontSize: '14px', fontWeight: '700',
+                  }}>
+                    {getStatusLabel()}
+                  </span>
+                )}
               </div>
             )}
 
-            {/* Overlay: procesando */}
-            {isProcessing && (
-              <div style={{
-                position: 'absolute', inset: 0, gap: '16px',
-                display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
-              }}>
-                <div style={{
-                  width: '48px', height: '48px',
-                  border: `3px solid ${COLORS.glassBorder}`,
-                  borderTop: `3px solid ${COLORS.primary}`,
-                  borderRadius: '50%', animation: 'spin 0.8s linear infinite',
-                }} />
-                <p style={{ color: COLORS.text, fontSize: '18px', fontWeight: '600', margin: 0 }}>
-                  Generando collage...
-                </p>
-              </div>
-            )}
-
-            {/* Overlay: conectando */}
-            {(status === 'requesting' || status === 'connecting') && (
-              <div style={{
-                position: 'absolute', inset: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(0,0,0,0.7)',
-              }}>
-                <p style={{ color: COLORS.textMuted, fontSize: '18px', margin: 0 }}>
-                  Conectando cámara...
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Miniaturas */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-            {Array.from({ length: TOTAL_PHOTOS }).map((_, i) => (
-              <PhotoSlot
-                key={i}
-                index={i}
-                photoSrc={photos[i] || null}
-                isActive={isCapturing && i === currentPhotoIndex && countdown !== null}
-              />
-            ))}
-          </div>
-
-          {/* Botón principal — siempre visible, deshabilitado durante ráfaga */}
-          {(status === 'previewing' || isCapturing) && (
-            <button
-              style={{
-                ...bigButtonStyle('primary'),
-                opacity:       isCapturing ? 0.45 : 1,
-                cursor:        isCapturing ? 'not-allowed' : 'pointer',
-                pointerEvents: isCapturing ? 'none' : 'auto',
-              }}
-              disabled={isCapturing}
-              onClick={startBurstSequence}
-            >
-              {isCapturing
-                ? `Capturando foto ${currentPhotoIndex + 1} de ${TOTAL_PHOTOS}...`
-                : '¡Empezar! 📸'}
-            </button>
-          )}
-
-          {/* Hint durante captura */}
-          {isCapturing && (
+            {/* Video container */}
             <div style={{
-              textAlign: 'center', color: COLORS.textMuted, fontSize: '14px',
-              padding: '12px', borderRadius: '12px', background: COLORS.surface,
+              position:    'relative', borderRadius: '16px', overflow: 'hidden',
+              aspectRatio: '1 / 1',   background: '#000',
+              border:      `1px solid ${COLORS.glassBorder}`,
+              boxShadow:   isCapturing && countdown !== null && typeof countdown === 'string'
+                ? `0 0 0 4px ${COLORS.accent}, 0 0 60px ${COLORS.accentGlow}`
+                : 'none',
+              transition:  'box-shadow 0.15s ease',
             }}>
-              {countdown === null
-                ? `Preparate para la foto ${currentPhotoIndex + 1} de ${TOTAL_PHOTOS}...`
-                : '¡Conteo iniciado — sonreí!'}
+              {/* ─── Espejo visual del <video> real ───
+                  Usamos un <video> independiente que apunta al mismo stream
+                  (NO el mismo ref) — así el videoRef sigue apuntando al
+                  elemento hidden que recibió el stream, evitando doble
+                  asignación de srcObject. */}
+              <VideoMirror streamRef={streamRef} />
+
+              {/* Overlay: cuenta regresiva */}
+              {isCapturing && countdown !== null && (
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background:     typeof countdown === 'string' ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.4)',
+                  backdropFilter: 'blur(2px)',
+                }}>
+                  <span style={{
+                    fontSize:   typeof countdown === 'number' ? '120px' : '80px',
+                    fontWeight: '900',
+                    color:      typeof countdown === 'number' ? COLORS.countdown : COLORS.accent,
+                    textShadow: '0 0 40px currentColor',
+                    lineHeight: 1,
+                    animation:  typeof countdown === 'number' ? 'countdownPop 1s ease-out' : 'none',
+                  }}>
+                    {countdown}
+                  </span>
+                </div>
+              )}
+
+              {/* Overlay: procesando */}
+              {isProcessing && (
+                <div style={{
+                  position: 'absolute', inset: 0, gap: '16px',
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+                }}>
+                  <div style={{
+                    width: '48px', height: '48px',
+                    border: `3px solid ${COLORS.glassBorder}`,
+                    borderTop: `3px solid ${COLORS.primary}`,
+                    borderRadius: '50%', animation: 'spin 0.8s linear infinite',
+                  }} />
+                  <p style={{ color: COLORS.text, fontSize: '18px', fontWeight: '600', margin: 0 }}>
+                    Generando collage...
+                  </p>
+                </div>
+              )}
+
+              {/* Overlay: conectando */}
+              {(status === 'requesting' || status === 'connecting') && (
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(0,0,0,0.7)',
+                }}>
+                  <p style={{ color: COLORS.textMuted, fontSize: '18px', margin: 0 }}>
+                    Conectando cámara...
+                  </p>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Miniaturas — portrait: fila de 4 bajo el video */}
+            {!isLandscape && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                {Array.from({ length: TOTAL_PHOTOS }).map((_, i) => (
+                  <PhotoSlot
+                    key={i}
+                    index={i}
+                    photoSrc={photos[i] || null}
+                    isActive={isCapturing && i === currentPhotoIndex && countdown !== null}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ── Columna derecha: CONTROLES ──────────────── */}
+          <div style={{
+            flex:           1,
+            display:        'flex',
+            flexDirection:  'column',
+            gap:            '16px',
+            justifyContent: isLandscape ? 'space-between' : 'flex-start',
+            minWidth:       0,
+          }}>
+
+            {/* Header — landscape */}
+            {isLandscape && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700' }}>PhotoBooth</h2>
+                {(isCapturing || isProcessing) && (
+                  <span style={{
+                    background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.accent})`,
+                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                    fontSize: '13px', fontWeight: '700',
+                  }}>
+                    {getStatusLabel()}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Miniaturas — landscape: grid 2×2 en la columna derecha */}
+            {isLandscape && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                {Array.from({ length: TOTAL_PHOTOS }).map((_, i) => (
+                  <PhotoSlot
+                    key={i}
+                    index={i}
+                    photoSrc={photos[i] || null}
+                    isActive={isCapturing && i === currentPhotoIndex && countdown !== null}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Botón principal */}
+            {(status === 'previewing' || isCapturing) && (
+              <button
+                style={{
+                  ...bigButtonStyle('primary'),
+                  opacity:       isCapturing ? 0.45 : 1,
+                  cursor:        isCapturing ? 'not-allowed' : 'pointer',
+                  pointerEvents: isCapturing ? 'none' : 'auto',
+                  padding:       isLandscape ? '14px 24px' : '20px 32px',
+                  fontSize:      isLandscape ? '15px' : '18px',
+                }}
+                disabled={isCapturing}
+                onClick={startBurstSequence}
+              >
+                {isCapturing
+                  ? `Capturando foto ${currentPhotoIndex + 1} de ${TOTAL_PHOTOS}...`
+                  : '¡Empezar! 📸'}
+              </button>
+            )}
+
+            {/* Hint durante captura */}
+            {isCapturing && (
+              <div style={{
+                textAlign: 'center', color: COLORS.textMuted, fontSize: '14px',
+                padding: '10px', borderRadius: '12px', background: COLORS.surface,
+              }}>
+                {countdown === null
+                  ? `Preparate para la foto ${currentPhotoIndex + 1} de ${TOTAL_PHOTOS}...`
+                  : '¡Conteo iniciado — sonreí!'}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
