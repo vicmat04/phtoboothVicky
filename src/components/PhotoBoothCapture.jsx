@@ -474,7 +474,7 @@ export default function PhotoBoothCapture() {
 
     // El collage ya está en Cloudinary (se subió automáticamente al generarse).
     // Solo construimos el link de WhatsApp y lo abrimos.
-    const text   = `¡Mira mi foto en los XI de Ana Victoria! 🎉 ${collageUrl}`;
+    const text   = `¡Mira mi foto en los XV de Ana Victoria! 🎉 ${collageUrl}`;
     const waLink = `https://wa.me/507${whatsappNumber}?text=${encodeURIComponent(text)}`;
     window.open(waLink, '_blank');
     setSentSuccess(true);
@@ -700,7 +700,7 @@ export default function PhotoBoothCapture() {
               letterSpacing: '0.06em',
               textShadow: 'none',
             }}>
-              Los XI de Ana Victoria
+              Los XV de Ana Victoria
             </h1>
             <p style={{
               margin: '4px 0 0', color: COLORS.gold, fontSize: '13px',
