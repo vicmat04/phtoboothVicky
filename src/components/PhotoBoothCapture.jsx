@@ -310,6 +310,13 @@ export default function PhotoBoothCapture() {
     setStatus('requesting');
     setErrorMsg('');
 
+    // VALIDACIÓN CRÍTICA: Los navegadores bloquean el acceso a la cámara si no hay HTTPS o Localhost.
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setErrorMsg('¡Error de Seguridad! La cámara requiere HTTPS. Si estás en una tablet probando en red local, debés habilitar "Insecure origins as secure" en chrome://flags.');
+      setStatus('error');
+      return;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia(CAMERA_CONSTRAINTS);
       streamRef.current = stream;
