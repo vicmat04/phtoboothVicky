@@ -62,25 +62,51 @@ const COLORS = {
 
 // ─────────────────────────────────────────────
 // Hook: Detecta orientación del dispositivo
-// Reactivo al girar la tablet en tiempo real.
+// — Screen Orientation API  (más fiable en tablets Android/iOS)
+// — matchMedia              (fallback CSS)
+// — window.innerWidth/Height (fallback de dimensiones)
+// — visibilitychange        (re-evalúa al volver a la pestaña)
 // ─────────────────────────────────────────────
 
 function useOrientation() {
-  const getMatch = () => window.matchMedia('(orientation: landscape)').matches;
-  const [isLandscape, setIsLandscape] = useState(getMatch);
+  const getIsLandscape = () => {
+    // Método 1: Screen Orientation API — más fiable en dispositivos táctiles
+    if (typeof screen !== 'undefined' && screen.orientation?.type) {
+      return screen.orientation.type.startsWith('landscape');
+    }
+    // Método 2: matchMedia
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(orientation: landscape)').matches;
+    }
+    // Método 3: comparación de dimensiones
+    return window.innerWidth > window.innerHeight;
+  };
+
+  const [isLandscape, setIsLandscape] = useState(getIsLandscape);
 
   useEffect(() => {
-    const mq      = window.matchMedia('(orientation: landscape)');
-    const handler = (e) => setIsLandscape(e.matches);
-    mq.addEventListener('change', handler);
-    // Fallback: resize event para tablets que no disparan el media query
-    const onResize = () => setIsLandscape(window.innerWidth > window.innerHeight);
-    window.addEventListener('resize', onResize);
+    const update = () => setIsLandscape(getIsLandscape());
+
+    // Screen Orientation API — el más confiable en tablets
+    screen.orientation?.addEventListener('change', update);
+
+    // matchMedia — navegadores de escritorio y algunos tablets
+    const mq = window.matchMedia?.('(orientation: landscape)');
+    mq?.addEventListener('change', update);
+
+    // resize — fallback universal
+    window.addEventListener('resize', update);
+
+    // visibilitychange — re-evalúa al volver a la pestaña tras rotar
+    document.addEventListener('visibilitychange', update);
+
     return () => {
-      mq.removeEventListener('change', handler);
-      window.removeEventListener('resize', onResize);
+      screen.orientation?.removeEventListener('change', update);
+      mq?.removeEventListener('change', update);
+      window.removeEventListener('resize', update);
+      document.removeEventListener('visibilitychange', update);
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return isLandscape;
 }
