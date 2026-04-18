@@ -685,57 +685,88 @@ export default function PhotoBoothCapture() {
           PANTALLA: IDLE — bienvenida
       ══════════════════════════════════════════════════ */}
       {status === 'idle' && (
-        <div style={glassCardStyle}>
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <div style={{
+          ...glassCardStyle,
+          display:       isLandscape ? 'flex' : 'block',
+          flexDirection: isLandscape ? 'row' : 'column',
+          alignItems:    isLandscape ? 'center' : 'stretch',
+          gap:           isLandscape ? '40px' : '20px',
+          maxWidth:      isLandscape ? 'none' : '720px',
+          padding:       isLandscape ? '32px 48px' : '24px',
+          textAlign:     isLandscape ? 'left' : 'center',
+        }}>
+          {/* Columna Izquierda / Superior: Título y Logo */}
+          <div style={{ flex: 1 }}>
             <div
               onClick={handleSecretTap}
-              style={{ fontSize: '52px', marginBottom: '8px', cursor: 'default', userSelect: 'none' }}
-              title=""
+              style={{
+                fontSize: '52px',
+                marginBottom: '16px',
+                cursor: 'default',
+                userSelect: 'none',
+                textAlign: isLandscape ? 'left' : 'center'
+              }}
             >🌿</div>
             <h1 style={{
-              margin: 0, fontSize: '28px', fontWeight: '800',
+              margin: 0, fontSize: isLandscape ? '36px' : '28px', fontWeight: '800',
               fontFamily: "'Cinzel', 'Georgia', serif",
               background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.primary}, ${COLORS.accent})`,
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
               letterSpacing: '0.06em',
-              textShadow: 'none',
+              lineHeight: 1.2,
             }}>
               Los XV de Ana Victoria
             </h1>
             <p style={{
-              margin: '4px 0 0', color: COLORS.gold, fontSize: '13px',
+              margin: '8px 0 0', color: COLORS.gold, fontSize: '14px',
               letterSpacing: '0.2em', textTransform: 'uppercase',
               fontFamily: "'Cinzel', serif",
             }}>
               Bosque Encantado · 18 Abril 2026
             </p>
-            <p style={{ margin: '12px 0 0', color: COLORS.textMuted, fontSize: '15px' }}>
-              Capturá tus momentos mágicos
+            <p style={{
+              margin: '16px 0 0', color: COLORS.textMuted,
+              fontSize: '16px', lineHeight: 1.6
+            }}>
+              Capturá tus momentos mágicos en esta noche inolvidable.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
-            {[
-              { icon: '📸', label: '4 capturas automáticas' },
-              { icon: '✨', label: 'Cuenta regresiva de 3s' },
-              { icon: '🌿', label: 'Diseño bosque encantado' },
-              { icon: '📱', label: 'Compartí por WhatsApp' },
-            ].map(({ icon, label }) => (
-              <div key={label} style={{
-                background: COLORS.surface, borderRadius: '12px', padding: '16px',
-                display: 'flex', alignItems: 'center', gap: '12px',
-                fontSize: '14px', color: COLORS.textMuted,
-                border: `1px solid ${COLORS.glassBorder}`,
-              }}>
-                <span style={{ fontSize: '24px' }}>{icon}</span>
-                {label}
-              </div>
-            ))}
-          </div>
+          {/* Columna Derecha / Inferior: Características y Botón */}
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px',
+            marginTop: isLandscape ? 0 : '32px'
+          }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '12px',
+            }}>
+              {[
+                { icon: '📸', label: '4 capturas' },
+                { icon: '✨', label: '3s cuenta' },
+                { icon: '🌿', label: 'Diseño XV' },
+                { icon: '📱', label: 'WhatsApp' },
+              ].map(({ icon, label }) => (
+                <div key={label} style={{
+                  background: COLORS.surface, borderRadius: '12px', padding: '12px',
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  fontSize: '13px', color: COLORS.textMuted,
+                  border: `1px solid ${COLORS.glassBorder}`,
+                }}>
+                  <span style={{ fontSize: '20px' }}>{icon}</span>
+                  {label}
+                </div>
+              ))}
+            </div>
 
-          <button style={bigButtonStyle('primary')} onClick={startCamera}>
-            Activar cámara
-          </button>
+            <button style={bigButtonStyle('primary')} onClick={startCamera}>
+              Activar cámara
+            </button>
+          </div>
         </div>
       )}
 
@@ -743,7 +774,11 @@ export default function PhotoBoothCapture() {
           PANTALLA: REQUESTING / CONNECTING — esperando stream
       ══════════════════════════════════════════════════ */}
       {(status === 'requesting' || status === 'connecting') && (
-        <div style={{ ...glassCardStyle, textAlign: 'center' }}>
+        <div style={{
+          ...glassCardStyle,
+          textAlign: 'center',
+          maxWidth:  isLandscape ? 'none' : '720px'
+        }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>📷</div>
           <p style={{ color: COLORS.textMuted, fontSize: '18px', margin: 0 }}>
             Conectando con la cámara...
@@ -755,7 +790,11 @@ export default function PhotoBoothCapture() {
           PANTALLA: ERROR
       ══════════════════════════════════════════════════ */}
       {status === 'error' && (
-        <div style={{ ...glassCardStyle, textAlign: 'center' }}>
+        <div style={{
+          ...glassCardStyle,
+          textAlign: 'center',
+          maxWidth:  isLandscape ? 'none' : '720px'
+        }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
           <p style={{ color: COLORS.danger, fontSize: '16px', marginBottom: '24px' }}>
             {errorMsg}
